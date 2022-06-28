@@ -4,14 +4,9 @@ const mongoose = require('mongoose');
 const { errors } = require('celebrate');
 const cors = require('cors');
 const { requestLogger, errorLogger } = require('./middlewares/logger');
-const auth = require('./middlewares/auth');
+const { routes } = require('./routes/index');
 
 const { PORT = 3000 } = process.env;
-const { userRoutes } = require('./routes/users');
-const { movieRoutes } = require('./routes/movies');
-const { validateSignUp, validateSignIn } = require('./routes/index');
-const { createUser, login } = require('./controllers/users');
-const NotFoundError = require('./errors/NotFoundError');
 const ErrorHandler = require('./errors/ErrorHandler');
 
 const app = express();
@@ -29,21 +24,14 @@ app.get('/crash-test', () => {
   }, 0);
 });
 
-app.post('/signup', validateSignUp, createUser);
-app.post('/signin', validateSignIn, login);
-
-app.use('/users', auth, userRoutes);
-app.use('/movie', auth, movieRoutes);
-app.use(auth, () => {
-  throw new NotFoundError('Страница не найдена');
-});
+app.use(routes);
 
 app.use(errorLogger);
 app.use(errors());
 app.use(ErrorHandler);
 
 async function main() {
-  await mongoose.connect('mongodb://localhost:27017/bitfilmsdb', {
+  await mongoose.connect('mongodb://localhost:27017/moviesdb', {
     useNewUrlParser: true,
     useUnifiedTopology: false,
   });

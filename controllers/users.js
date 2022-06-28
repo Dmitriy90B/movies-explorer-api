@@ -50,7 +50,7 @@ const login = async (req, res, next) => {
   }
   try {
     res.send({
-      token: jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'dev-secret', { expiresIn: '7d' }),
+      token: jwt.sign({ _id: user._id }, NODE_ENV === 'production' ? JWT_SECRET : 'some-secret-key', { expiresIn: '7d' }),
     });
   } catch (err) {
     next(err);
@@ -78,6 +78,10 @@ const updateUser = async (req, res, next) => {
   } catch (err) {
     if (err.name === 'ValidationError') {
       next(new BadRequestError('Переданы некорректные данные при обновлении пользователя'));
+      return;
+    }
+    if (err.code === MONGOOSE_ERROR_CODE) {
+      next(new ConflictError('Пользователь уже существует'));
       return;
     }
     next(err);
